@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Rhizomatic Website Network</title>
+  <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+  <style>
+    #cy { width: 100%; height: 95vh; display: block; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+  </style>
+</head>
+<body>
+<h2 style="text-align:center;">Rhizomatic Website Network</h2>
+<div id="cy"></div>
+<script>
+fetch('network.json')
+  .then(r => r.json())
+  .then(data => {
+    // Convert JSON nodes/edges to Cytoscape elements
+    var elements = [];
+
+    data.nodes.forEach(n => {
+      elements.push({ data: { id: n.id, label: n.label, url: n.url } });
+    });
+
+    data.edges.forEach(e => {
+      elements.push({ data: { source: e.source, target: e.target, weight: e.weight } });
+    });
+
+    var cy = cytoscape({
+      container: document.getElementById('cy'),
+      elements: elements,
+      style: [
+        { selector: 'node',
+          style: {
+            'label': 'data(label)',
+            'width': 20,
+            'height': 20,
+            'background-color': '#3498db',
+            'color': '#000',
+            'text-valign': 'center',
+            'text-halign': 'center',
+            'font-size': 10
+          }
+        },
+        { selector: 'edge',
+          style: {
+            'width': 'mapData(weight,0,1,1,6)',
+            'line-color': '#ccc'
+          }
+        }
+      ],
+      layout: {
+        name: 'cose',
+        idealEdgeLength: 50,
+        nodeOverlap: 10,
+        refresh: 20,
+        fit: true,
+        padding: 30
+      }
+    });
+
+    // Clickable nodes to open websites
+    cy.on('tap', 'node', function(evt){
+      var url = evt.target.data('url');
+      window.open(url, '_blank');
+    });
+  });
+</script>
+</body>
+</html>
